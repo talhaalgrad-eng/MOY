@@ -6,344 +6,507 @@
     <title>لوحة تحكم البوت | MOY</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap');
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Cairo', sans-serif; background: #0f0f23; min-height: 100vh; overflow-x: hidden; position: relative; }
+        body::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.15), transparent 50%), radial-gradient(circle at 80% 50%, rgba(138, 43, 226, 0.15), transparent 50%), radial-gradient(circle at 40% 80%, rgba(75, 0, 130, 0.15), transparent 50%); animation: bgMove 20s ease infinite; z-index: 0; }
+        @keyframes bgMove { 0%, 100% { transform: scale(1) rotate(0deg); } 50% { transform: scale(1.1) rotate(2deg); } }
+        .particle { position: fixed; width: 4px; height: 4px; background: rgba(138, 43, 226, 0.6); border-radius: 50%; pointer-events: none; animation: float 15s infinite; z-index: 1; }
+        @keyframes float { 0%, 100% { transform: translateY(0) translateX(0); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { transform: translateY(-100vh) translateX(50px); opacity: 0; } }
+        .container { max-width: 1400px; margin: 40px auto; padding: 0 20px; position: relative; z-index: 2; }
+        .header { background: linear-gradient(135deg, rgba(138, 43, 226, 0.1), rgba(75, 0, 130, 0.1)); backdrop-filter: blur(20px); border: 1px solid rgba(138, 43, 226, 0.2); border-radius: 25px; padding: 40px; text-align: center; margin-bottom: 30px; box-shadow: 0 20px 60px rgba(138, 43, 226, 0.2); animation: slideDown 0.6s ease; }
+        @keyframes slideDown { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .header h1 { font-size: 3em; font-weight: 900; background: linear-gradient(135deg, #667eea, #764ba2, #f093fb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; animation: glow 3s ease-in-out infinite; }
+        @keyframes glow { 0%, 100% { filter: brightness(1); } 50% { filter: brightness(1.3); } }
+        .header p { color: rgba(255, 255, 255, 0.7); font-size: 1.2em; }
+        .status-badge { display: inline-block; padding: 10px 25px; border-radius: 50px; font-size: 0.9em; font-weight: 600; margin-top: 15px; animation: pulse 2s ease-in-out infinite; }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        .status-online { background: linear-gradient(135deg, #10b981, #059669); color: white; box-shadow: 0 0 20px rgba(16, 185, 129, 0.5); }
+        .status-offline { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; box-shadow: 0 0 20px rgba(239, 68, 68, 0.5); }
+        .nav { display: flex; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; justify-content: center; animation: slideUp 0.6s ease 0.2s backwards; }
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .nav-btn { padding: 18px 35px; border: none; border-radius: 15px; font-size: 1.1em; font-weight: 700; cursor: pointer; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); background: rgba(255, 255, 255, 0.05); color: rgba(255, 255, 255, 0.7); border: 2px solid rgba(255, 255, 255, 0.1); position: relative; overflow: hidden; }
+        .nav-btn::before { content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0; border-radius: 50%; background: rgba(138, 43, 226, 0.3); transform: translate(-50%, -50%); transition: width 0.6s, height 0.6s; }
+        .nav-btn:hover::before { width: 300px; height: 300px; }
+        .nav-btn:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(138, 43, 226, 0.4); border-color: rgba(138, 43, 226, 0.5); }
+        .nav-btn.active { background: linear-gradient(135deg, #667eea, #764ba2); color: white; border-color: transparent; box-shadow: 0 10px 30px rgba(138, 43, 226, 0.5); }
+        .nav-btn span { position: relative; z-index: 1; }
+        .content { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 25px; padding: 40px; min-height: 500px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); animation: fadeIn 0.6s ease 0.4s backwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .section { display: none; }
+        .section.active { display: block; animation: sectionFade 0.5s ease; }
+        @keyframes sectionFade { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+        .command-item { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(138, 43, 226, 0.2); border-radius: 15px; padding: 25px; margin-bottom: 20px; transition: all 0.3s ease; position: relative; overflow: hidden; }
+        .command-item::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(138, 43, 226, 0.1), transparent); transition: left 0.5s; }
+        .command-item:hover::before { left: 100%; }
+        .command-item:hover { transform: translateY(-5px); border-color: rgba(138, 43, 226, 0.5); box-shadow: 0 15px 40px rgba(138, 43, 226, 0.2); }
+        .command-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .command-name { font-size: 1.4em; font-weight: 700; color: #fff; text-shadow: 0 0 10px rgba(138, 43, 226, 0.5); }
+        .command-controls { display: flex; gap: 12px; align-items: center; }
+        .toggle-switch { position: relative; width: 70px; height: 35px; background: rgba(255, 255, 255, 0.1); border-radius: 35px; cursor: pointer; transition: all 0.3s; border: 2px solid rgba(255, 255, 255, 0.2); }
+        .toggle-switch.active { background: linear-gradient(135deg, #10b981, #059669); border-color: transparent; box-shadow: 0 0 20px rgba(16, 185, 129, 0.5); }
+        .toggle-slider { position: absolute; top: 3px; right: 3px; width: 27px; height: 27px; background: white; border-radius: 50%; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); }
+        .toggle-switch.active .toggle-slider { transform: translateX(-35px); }
+        .btn { padding: 12px 24px; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; transition: all 0.3s ease; font-size: 1em; position: relative; overflow: hidden; }
+        .btn::after { content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0; border-radius: 50%; background: rgba(255, 255, 255, 0.3); transform: translate(-50%, -50%); transition: width 0.4s, height 0.4s; }
+        .btn:active::after { width: 200px; height: 200px; }
+        .btn-edit { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); }
+        .btn-edit:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6); }
+        .btn-save { background: linear-gradient(135deg, #10b981, #059669); color: white; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); }
+        .btn-save:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6); }
+        .btn-delete { background: linear-gradient(135deg, #ef4444, #dc2626); color: white; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4); }
+        .btn-delete:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(239, 68, 68, 0.6); }
+        .btn-add { background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4); }
+        .btn-add:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(139, 92, 246, 0.6); }
+        .shortcuts-list { margin-top: 20px; padding: 20px; background: rgba(0, 0, 0, 0.2); border-radius: 12px; border: 1px solid rgba(138, 43, 226, 0.2); }
+        .shortcuts-list strong { color: #a78bfa; display: block; margin-bottom: 10px; }
+        .shortcut-item { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { transform: translateX(-20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .shortcut-item input { flex: 1; padding: 14px; border: 2px solid rgba(138, 43, 226, 0.3); border-radius: 10px; font-size: 1em; background: rgba(255, 255, 255, 0.05); color: white; transition: all 0.3s; }
+        .shortcut-item input:focus { outline: none; border-color: #8b5cf6; box-shadow: 0 0 20px rgba(139, 92, 246, 0.3); background: rgba(255, 255, 255, 0.08); }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(10px); z-index: 1000; justify-content: center; align-items: center; animation: modalFade 0.3s ease; }
+        @keyframes modalFade { from { opacity: 0; } to { opacity: 1; } }
+        .modal.active { display: flex; }
+        .modal-content { background: linear-gradient(135deg, rgba(30, 30, 60, 0.95), rgba(20, 20, 40, 0.95)); backdrop-filter: blur(20px); padding: 40px; border-radius: 25px; max-width: 650px; width: 90%; max-height: 85vh; overflow-y: auto; border: 2px solid rgba(138, 43, 226, 0.3); box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5); animation: modalSlide 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes modalSlide { from { transform: scale(0.7) translateY(50px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+        .modal-header { font-size: 1.8em; font-weight: 700; margin-bottom: 25px; color: #fff; text-align: center; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        textarea { width: 100%; min-height: 220px; padding: 18px; border: 2px solid rgba(138, 43, 226, 0.3); border-radius: 15px; font-size: 1em; font-family: 'Cairo', sans-serif; resize: vertical; background: rgba(255, 255, 255, 0.05); color: white; transition: all 0.3s; }
+        textarea:focus { outline: none; border-color: #8b5cf6; box-shadow: 0 0 30px rgba(139, 92, 246, 0.3); background: rgba(255, 255, 255, 0.08); }
+        .response-item { background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 15px; margin-bottom: 18px; border: 2px solid rgba(138, 43, 226, 0.2); transition: all 0.3s; animation: itemAppear 0.4s ease; }
+        @keyframes itemAppear { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .response-item:hover { border-color: rgba(138, 43, 226, 0.5); transform: translateX(-5px); box-shadow: 0 10px 30px rgba(138, 43, 226, 0.2); }
+        .response-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .response-trigger { font-weight: 700; color: #a78bfa; font-size: 1.1em; }
+        .response-text { color: rgba(255, 255, 255, 0.8); margin-top: 8px; padding: 10px; background: rgba(0, 0, 0, 0.2); border-radius: 8px; }
+        .info-box { background: rgba(59, 130, 246, 0.1); border: 2px solid rgba(59, 130, 246, 0.3); border-radius: 15px; padding: 20px; margin-bottom: 25px; }
+        .info-box strong { color: #60a5fa; display: block; margin-bottom: 8px; }
+        input[type="text"] { width: 100%; padding: 14px; border: 2px solid rgba(138, 43, 226, 0.3); border-radius: 12px; font-size: 1em; margin-bottom: 15px; background: rgba(255, 255, 255, 0.05); color: white; transition: all 0.3s; }
+        input[type="text"]:focus { outline: none; border-color: #8b5cf6; box-shadow: 0 0 20px rgba(139, 92, 246, 0.3); background: rgba(255, 255, 255, 0.08); }
+        .welcome-preview { background: rgba(0, 0, 0, 0.4); color: #a78bfa; padding: 25px; border-radius: 15px; margin-top: 20px; white-space: pre-wrap; font-family: 'Courier New', monospace; border: 2px solid rgba(138, 43, 226, 0.3); }
+        label { color: rgba(255, 255, 255, 0.9); font-weight: 600; display: block; margin-bottom: 8px; }
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: linear-gradient(135deg, #764ba2, #667eea); }
+        h2 { color: #fff; margin-bottom: 25px; font-size: 1.8em; text-shadow: 0 0 20px rgba(138, 43, 226, 0.5); }
+    </style>
+</head>
+<!-- CONTINUE TO PART 2 FOR BODY -->
+<body>
+<script>
+for(let i=0;i<30;i++){const p=document.createElement('div');p.className='particle';p.style.left=Math.random()*100+'%';p.style.animationDelay=Math.random()*15+'s';p.style.animationDuration=(Math.random()*10+10)+'s';document.body.appendChild(p);}
+</script>
 
-        body {
-            font-family: 'Cairo', sans-serif;
-            background: #0f0f23;
-            min-height: 100vh;
-            overflow-x: hidden;
-            position: relative;
-        }
+<div class="container">
+    <div class="header">
+        <h1>🤖 لوحة تحكم MOY</h1>
+        <p>تحكم متقدم في جميع إعدادات البوت</p>
+        <div id="statusBadge" class="status-badge status-offline">⚠️ غير متصل</div>
+    </div>
 
-        /* Animated Background */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.15), transparent 50%),
-                radial-gradient(circle at 80% 50%, rgba(138, 43, 226, 0.15), transparent 50%),
-                radial-gradient(circle at 40% 80%, rgba(75, 0, 130, 0.15), transparent 50%);
-            animation: bgMove 20s ease infinite;
-            z-index: 0;
-        }
+    <div class="nav">
+        <button class="nav-btn active" onclick="showSection('commands')"><span>⚙️ الأوامر</span></button>
+        <button class="nav-btn" onclick="showSection('welcome')"><span>👋 الترحيب</span></button>
+        <button class="nav-btn" onclick="showSection('responses')"><span>🤖 الردود التلقائية</span></button>
+    </div>
 
-        @keyframes bgMove {
-            0%, 100% { transform: scale(1) rotate(0deg); }
-            50% { transform: scale(1.1) rotate(2deg); }
-        }
+    <div class="content">
+        <div id="commands" class="section active">
+            <h2>⚙️ إدارة الأوامر</h2>
+            <div id="commandsList"></div>
+        </div>
 
-        /* Floating Particles */
-        .particle {
-            position: fixed;
-            width: 4px;
-            height: 4px;
-            background: rgba(138, 43, 226, 0.6);
-            border-radius: 50%;
-            pointer-events: none;
-            animation: float 15s infinite;
-            z-index: 1;
-        }
+        <div id="welcome" class="section">
+            <h2>👋 رسالة الترحيب</h2>
+            <div class="info-box">
+                <strong>المتغيرات المتاحة:</strong>
+                ${member} - منشن العضو الجديد<br>
+                ${memberCount} - عدد الأعضاء<br>
+                ${guild} - اسم السيرفر
+            </div>
+            <textarea id="welcomeText" placeholder="اكتب رسالة الترحيب هنا..."></textarea>
+            <button class="btn btn-save" onclick="saveWelcome()">💾 حفظ التغييرات</button>
+            <div id="welcomePreview" class="welcome-preview" style="display: none;"></div>
+        </div>
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0) translateX(0); opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { transform: translateY(-100vh) translateX(50px); opacity: 0; }
-        }
+        <div id="responses" class="section">
+            <h2>🤖 الردود التلقائية</h2>
+            <div class="info-box">
+                <strong>المتغيرات المتاحة:</strong>
+                [user] - منشن المستخدم الذي كتب الرسالة<br>
+                [username] - اسم المستخدم (بدون منشن)
+            </div>
+            <button class="btn btn-add" onclick="showAddResponseModal()">➕ إضافة رد تلقائي</button>
+            <div id="responsesList"></div>
+        </div>
+    </div>
+</div>
 
-        .container {
-            max-width: 1400px;
-            margin: 40px auto;
-            padding: 0 20px;
-            position: relative;
-            z-index: 2;
-        }
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">تعديل الاختصارات</div>
+        <div id="modalContent"></div>
+        <button class="btn btn-add" onclick="addShortcut()">➕ إضافة اختصار جديد</button>
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button class="btn btn-save" onclick="saveShortcuts()">💾 حفظ</button>
+            <button class="btn btn-delete" onclick="closeModal()">❌ إلغاء</button>
+        </div>
+    </div>
+</div>
 
-        /* Header */
-        .header {
-            background: linear-gradient(135deg, rgba(138, 43, 226, 0.1), rgba(75, 0, 130, 0.1));
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(138, 43, 226, 0.2);
-            border-radius: 25px;
-            padding: 40px;
-            text-align: center;
-            margin-bottom: 30px;
-            box-shadow: 0 20px 60px rgba(138, 43, 226, 0.2);
-            animation: slideDown 0.6s ease;
-        }
+<div id="addResponseModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">إضافة رد تلقائي</div>
+        <label>الرسالة المحفزة:</label>
+        <input type="text" id="newTrigger" placeholder="مثال: مرحبا">
+        <label>الرد:</label>
+        <input type="text" id="newResponse" placeholder="مثال: أهلاً وسهلاً [user]">
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button class="btn btn-save" onclick="addResponse()">➕ إضافة</button>
+            <button class="btn btn-delete" onclick="closeAddResponseModal()">❌ إلغاء</button>
+        </div>
+    </div>
+</div>
 
-        @keyframes slideDown {
-            from { transform: translateY(-50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
+<div id="editResponseModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">تعديل رد تلقائي</div>
+        <label>الرسالة المحفزة:</label>
+        <input type="text" id="editTrigger">
+        <label>الرد:</label>
+        <input type="text" id="editResponse">
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button class="btn btn-save" onclick="updateResponse()">💾 حفظ</button>
+            <button class="btn btn-delete" onclick="closeEditResponseModal()">❌ إلغاء</button>
+        </div>
+    </div>
+</div>
 
-        .header h1 {
-            font-size: 3em;
-            font-weight: 900;
-            background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 10px;
-            animation: glow 3s ease-in-out infinite;
-        }
+<script>
+const API_URL = 'https://YOUR-SUBDOMAIN.wispbyte.com/api'; // ⚠️ CHANGE THIS!
+let commandsData = {};
+let autoResponses = {};
+let welcomeMessage = '';
+let currentEditingCommand = null;
+let currentEditingResponse = null;
 
-        @keyframes glow {
-            0%, 100% { filter: brightness(1); }
-            50% { filter: brightness(1.3); }
+async function loadData() {
+    try {
+        console.log('🔄 جاري تحميل البيانات...');
+        const response = await fetch(`${API_URL}/config`);
+        if (response.ok) {
+            const data = await response.json();
+            console.log('✅ تم تحميل البيانات:', data);
+            commandsData = data.commands || {};
+            autoResponses = data.autoResponses || {};
+            welcomeMessage = data.welcomeMessage || '';
+            updateStatus(true);
+            renderCommands();
+            renderWelcome();
+            renderResponses();
+        } else {
+            throw new Error('Failed to fetch: ' + response.status);
         }
+    } catch (error) {
+        console.error('❌ خطأ في تحميل البيانات:', error);
+        updateStatus(false);
+        loadFromLocalStorage();
+        renderCommands();
+        renderWelcome();
+        renderResponses();
+    }
+}
 
-        .header p {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 1.2em;
+async function saveData() {
+    try {
+        console.log('💾 جاري حفظ البيانات...');
+        const response = await fetch(`${API_URL}/config`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ commands: commandsData, autoResponses, welcomeMessage })
+        });
+        if (response.ok) {
+            console.log('✅ تم حفظ البيانات بنجاح');
+            updateStatus(true);
+        } else {
+            throw new Error('Save failed: ' + response.status);
         }
+    } catch (error) {
+        console.error('❌ خطأ في حفظ البيانات:', error);
+        updateStatus(false);
+    }
+    saveToLocalStorage();
+}
 
-        /* Status Badge */
-        .status-badge {
-            display: inline-block;
-            padding: 10px 25px;
-            border-radius: 50px;
-            font-size: 0.9em;
-            font-weight: 600;
-            margin-top: 15px;
-            animation: pulse 2s ease-in-out infinite;
+function loadFromLocalStorage() {
+    const saved = localStorage.getItem('botConfig');
+    if (saved) {
+        try {
+            const data = JSON.parse(saved);
+            commandsData = data.commands || {};
+            autoResponses = data.autoResponses || {};
+            welcomeMessage = data.welcomeMessage || '';
+            console.log('📂 تم تحميل البيانات من المتصفح');
+        } catch (e) {
+            console.error('❌ خطأ في تحميل من المتصفح:', e);
         }
+    }
+}
 
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+function saveToLocalStorage() {
+    try {
+        localStorage.setItem('botConfig', JSON.stringify({ commands: commandsData, autoResponses, welcomeMessage }));
+    } catch (e) {
+        console.error('❌ خطأ في الحفظ للمتصفح:', e);
+    }
+}
+
+function updateStatus(connected) {
+    const badge = document.getElementById('statusBadge');
+    if (connected) {
+        badge.className = 'status-badge status-online';
+        badge.textContent = '✅ متصل بالبوت';
+    } else {
+        badge.className = 'status-badge status-offline';
+        badge.textContent = '❌ غير متصل';
+    }
+}
+
+function showSection(section) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(section).classList.add('active');
+    event.target.classList.add('active');
+    if (section === 'commands') renderCommands();
+    if (section === 'welcome') renderWelcome();
+    if (section === 'responses') renderResponses();
+}
+
+function renderCommands() {
+    const container = document.getElementById('commandsList');
+    if (!container) return;
+    container.innerHTML = '';
+    if (Object.keys(commandsData).length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: rgba(255,255,255,0.5); padding: 40px;">لا توجد أوامر متاحة</p>';
+        return;
+    }
+    for (const [key, cmd] of Object.entries(commandsData)) {
+        const item = document.createElement('div');
+        item.className = 'command-item';
+        item.innerHTML = `
+            <div class="command-header">
+                <div class="command-name">${cmd.name}</div>
+                <div class="command-controls">
+                    <div class="toggle-switch ${cmd.enabled ? 'active' : ''}" onclick="toggleCommand('${key}')">
+                        <div class="toggle-slider"></div>
+                    </div>
+                    <button class="btn btn-edit" onclick="editCommand('${key}')">✏️ تعديل</button>
+                </div>
+            </div>
+            <div class="shortcuts-list">
+                <strong>الاختصارات الحالية:</strong> ${cmd.shortcuts.join(', ') || 'لا يوجد'}
+            </div>
+        `;
+        container.appendChild(item);
+    }
+}
+
+function toggleCommand(key) {
+    if (commandsData[key]) {
+        commandsData[key].enabled = !commandsData[key].enabled;
+        saveData();
+        renderCommands();
+    }
+}
+
+function editCommand(key) {
+    currentEditingCommand = key;
+    renderShortcutsList();
+    document.getElementById('editModal').classList.add('active');
+}
+
+function renderShortcutsList() {
+    const container = document.getElementById('modalContent');
+    if (!currentEditingCommand || !commandsData[currentEditingCommand]) return;
+    const shortcuts = commandsData[currentEditingCommand].shortcuts;
+    container.innerHTML = '<div class="shortcuts-list"><div id="shortcutsList"></div></div>';
+    const list = document.getElementById('shortcutsList');
+    shortcuts.forEach((shortcut, index) => {
+        const item = document.createElement('div');
+        item.className = 'shortcut-item';
+        item.innerHTML = `
+            <input type="text" value="${shortcut}" onchange="updateShortcut(${index}, this.value)">
+            <button class="btn btn-delete" onclick="deleteShortcut(${index})">🗑️</button>
+        `;
+        list.appendChild(item);
+    });
+}
+
+function updateShortcut(index, value) {
+    if (currentEditingCommand && commandsData[currentEditingCommand]) {
+        commandsData[currentEditingCommand].shortcuts[index] = value.trim();
+    }
+}
+
+function deleteShortcut(index) {
+    if (currentEditingCommand && commandsData[currentEditingCommand]) {
+        commandsData[currentEditingCommand].shortcuts.splice(index, 1);
+        renderShortcutsList();
+    }
+}
+
+function addShortcut() {
+    if (currentEditingCommand && commandsData[currentEditingCommand]) {
+        commandsData[currentEditingCommand].shortcuts.push('');
+        renderShortcutsList();
+    }
+}
+
+function saveShortcuts() {
+    saveData();
+    closeModal();
+    renderCommands();
+}
+
+function closeModal() {
+    document.getElementById('editModal').classList.remove('active');
+    currentEditingCommand = null;
+}
+
+function renderWelcome() {
+    const textArea = document.getElementById('welcomeText');
+    if (textArea) {
+        textArea.value = welcomeMessage;
+        updateWelcomePreview();
+    }
+}
+
+function saveWelcome() {
+    welcomeMessage = document.getElementById('welcomeText').value;
+    saveData();
+    const btn = event.target;
+    const originalText = btn.textContent;
+    btn.textContent = '✅ تم الحفظ!';
+    setTimeout(() => { btn.textContent = originalText; }, 2000);
+}
+
+function updateWelcomePreview() {
+    const preview = document.getElementById('welcomePreview');
+    const textArea = document.getElementById('welcomeText');
+    if (!preview || !textArea) return;
+    const text = textArea.value;
+    if (text.trim()) {
+        preview.style.display = 'block';
+        preview.textContent = text.replace(/\$\{member\}/g, '@NewUser').replace(/\$\{memberCount\}/g, '100').replace(/\$\{guild\}/g, 'سيرفر موي');
+    } else {
+        preview.style.display = 'none';
+    }
+}
+
+function renderResponses() {
+    const container = document.getElementById('responsesList');
+    if (!container) return;
+    container.innerHTML = '';
+    if (Object.keys(autoResponses).length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: rgba(255,255,255,0.5); padding: 40px;">لا توجد ردود تلقائية</p>';
+        return;
+    }
+    for (const [trigger, response] of Object.entries(autoResponses)) {
+        const item = document.createElement('div');
+        item.className = 'response-item';
+        item.innerHTML = `
+            <div class="response-header">
+                <div class="response-trigger">📨 ${trigger}</div>
+                <div class="command-controls">
+                    <button class="btn btn-edit" onclick="editResponse('${trigger.replace(/'/g, "\\'")}')">✏️</button>
+                    <button class="btn btn-delete" onclick="deleteResponse('${trigger.replace(/'/g, "\\'")}')">🗑️</button>
+                </div>
+            </div>
+            <div class="response-text">💬 ${response}</div>
+        `;
+        container.appendChild(item);
+    }
+}
+
+function showAddResponseModal() {
+    document.getElementById('newTrigger').value = '';
+    document.getElementById('newResponse').value = '';
+    document.getElementById('addResponseModal').classList.add('active');
+}
+
+function closeAddResponseModal() {
+    document.getElementById('addResponseModal').classList.remove('active');
+}
+
+function addResponse() {
+    const trigger = document.getElementById('newTrigger').value.trim().toLowerCase();
+    const response = document.getElementById('newResponse').value.trim();
+    if (!trigger || !response) {
+        alert('⚠️ يرجى ملء جميع الحقول!');
+        return;
+    }
+    autoResponses[trigger] = response;
+    saveData();
+    closeAddResponseModal();
+    renderResponses();
+}
+
+function editResponse(trigger) {
+    currentEditingResponse = trigger;
+    document.getElementById('editTrigger').value = trigger;
+    document.getElementById('editResponse').value = autoResponses[trigger];
+    document.getElementById('editResponseModal').classList.add('active');
+}
+
+function closeEditResponseModal() {
+    document.getElementById('editResponseModal').classList.remove('active');
+    currentEditingResponse = null;
+}
+
+function updateResponse() {
+    const newTrigger = document.getElementById('editTrigger').value.trim().toLowerCase();
+    const newResponse = document.getElementById('editResponse').value.trim();
+    if (!newTrigger || !newResponse) {
+        alert('⚠️ يرجى ملء جميع الحقول!');
+        return;
+    }
+    if (currentEditingResponse !== newTrigger) {
+        delete autoResponses[currentEditingResponse];
+    }
+    autoResponses[newTrigger] = newResponse;
+    saveData();
+    closeEditResponseModal();
+    renderResponses();
+}
+
+function deleteResponse(trigger) {
+    if (confirm(`هل أنت متأكد من حذف الرد "${trigger}"؟`)) {
+        delete autoResponses[trigger];
+        saveData();
+        renderResponses();
+    }
+}
+
+(async () => {
+    console.log('🚀 بدء تحميل لوحة التحكم...');
+    await loadData();
+    setInterval(loadData, 5000);
+})();
+
+const welcomeTextArea = document.getElementById('welcomeText');
+if (welcomeTextArea) {
+    welcomeTextArea.addEventListener('input', updateWelcomePreview);
+}
+
+document.querySelectorAll('.modal').forEach(modal => {
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.classList.remove('active');
         }
-
-        .status-online {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-            box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
-        }
-
-        .status-offline {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-            color: white;
-            box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
-        }
-
-        /* Navigation */
-        .nav {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-            justify-content: center;
-            animation: slideUp 0.6s ease 0.2s backwards;
-        }
-
-        @keyframes slideUp {
-            from { transform: translateY(50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .nav-btn {
-            padding: 18px 35px;
-            border: none;
-            border-radius: 15px;
-            font-size: 1.1em;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            background: rgba(255, 255, 255, 0.05);
-            color: rgba(255, 255, 255, 0.7);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .nav-btn::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(138, 43, 226, 0.3);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-
-        .nav-btn:hover::before {
-            width: 300px;
-            height: 300px;
-        }
-
-        .nav-btn:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(138, 43, 226, 0.4);
-            border-color: rgba(138, 43, 226, 0.5);
-        }
-
-        .nav-btn.active {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            border-color: transparent;
-            box-shadow: 0 10px 30px rgba(138, 43, 226, 0.5);
-        }
-
-        .nav-btn span {
-            position: relative;
-            z-index: 1;
-        }
-
-        /* Content Area */
-        .content {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 25px;
-            padding: 40px;
-            min-height: 500px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            animation: fadeIn 0.6s ease 0.4s backwards;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .section {
-            display: none;
-        }
-
-        .section.active {
-            display: block;
-            animation: sectionFade 0.5s ease;
-        }
-
-        @keyframes sectionFade {
-            from { opacity: 0; transform: translateX(-20px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        /* Command Items */
-        .command-item {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(138, 43, 226, 0.2);
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 20px;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .command-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(138, 43, 226, 0.1), transparent);
-            transition: left 0.5s;
-        }
-
-        .command-item:hover::before {
-            left: 100%;
-        }
-
-        .command-item:hover {
-            transform: translateY(-5px);
-            border-color: rgba(138, 43, 226, 0.5);
-            box-shadow: 0 15px 40px rgba(138, 43, 226, 0.2);
-        }
-
-        .command-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .command-name {
-            font-size: 1.4em;
-            font-weight: 700;
-            color: #fff;
-            text-shadow: 0 0 10px rgba(138, 43, 226, 0.5);
-        }
-
-        .command-controls {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-
-        /* Toggle Switch */
-        .toggle-switch {
-            position: relative;
-            width: 70px;
-            height: 35px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 35px;
-            cursor: pointer;
-            transition: all 0.3s;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .toggle-switch.active {
-            background: linear-gradient(135deg, #10b981, #059669);
-            border-color: transparent;
-            box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
-        }
-
-        .toggle-slider {
-            position: absolute;
-            top: 3px;
-            right: 3px;
-            width: 27px;
-            height: 27px;
-            background: white;
-            border-radius: 50%;
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-        }
-
-        .toggle-switch.active .toggle-slider {
-            transform: translateX(-35px);
-        }
-
-        /* Buttons */
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 12px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 1em;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
-            transform: translate(-50%, -50%);
-            transition: width 0.4s, height 0.4s;
+    });
+});
+</script>
+</body>
+</html>ransition: width 0.4s, height 0.4s;
         }
 
         .btn:active::after {
